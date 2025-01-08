@@ -1,20 +1,34 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
+import HomeScreen from './screens/HomeScreen';
+import { MarantzProvider } from './providers/MarantzProvider';
+import * as SplashScreen from "expo-splash-screen";
+import NotificationsController from './services/NotificationsController';
+import { AppContext } from './contexts/AppContext';
+import { useAppInitializer } from './hooks/useAppInitializer';
+
+SplashScreen.preventAutoHideAsync();
+NotificationsController.configureNotifications();
 
 export default function App() {
+  console.log("\n\nApp()\n");
+
+  const [isLoading, context] = useAppInitializer();
+
+  useEffect(() => {
+    if (!isLoading)
+      SplashScreen.hideAsync()
+  }, [isLoading]);
+
+  if (isLoading)
+    return null;
+
+  console.log(JSON.stringify(context?.alarm));
+
   return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <AppContext.Provider value={context}>
+      <MarantzProvider>
+        <HomeScreen />
+      </MarantzProvider>
+    </AppContext.Provider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
