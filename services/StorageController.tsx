@@ -1,5 +1,3 @@
-import { useRef } from "react";
-import { AppContextType } from "../types/AppContextType";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export class StorageController {

@@ -1,32 +1,32 @@
 import React from 'react';
 import { StyleSheet, Button, Text, View, TextInput } from 'react-native';
-import AlarmsScreen from './AlarmsScreen';
-import AmplifierScreen from './AmplifierScreen';
-import PlaybackScreen from './PlaybackScreen';
-import RadiosScreen from './RadiosScreen';
+import { Amplifier } from '../components/Amplifier';
+import { Playback } from '../components/Playback';
+import { RadioViewer } from '../components/RadioViewer';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AlarmProvider } from '../providers/AlarmProvider';
+import Alarm from '../components/Alarm';
 
 function HomeScreen() {
   return (
-    <GestureHandlerRootView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.amplifier}>
-        <AmplifierScreen />
+        <Amplifier />
       </View>
       <View style={styles.alarmContainer}>
         <AlarmProvider>
           <View style={styles.alarm}>
-            <AlarmsScreen />
+            <Alarm />
           </View>
           <View style={styles.radios}>
-            <RadiosScreen />
+            <RadioViewer />
           </View>
         </AlarmProvider>
       </View>
       <View style={styles.playback}>
-        <PlaybackScreen />
+        <Playback />
       </View>
-    </GestureHandlerRootView>
+    </View>
   );
 }
 
@@ -50,7 +50,11 @@ const styles = StyleSheet.create({
   },
   alarm: {
     flex: 2,
-    width: '100%'
+    width: '100%',
+    backgroundColor: 'gray',
+    // flexDirection: 'column',
+    // alignItems: 'center',
+    // justifyContent: 'center',
   },
   radios: {
     flex: 5,

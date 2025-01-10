@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, ScrollView, Text, View, TextInput, TouchableOpacity } from 'react-native';
 import { useMarantz } from '../providers/MarantzProvider';
 import { RadioItemType } from '../types/RadioItemType';
-import RadioButton from '../components/RadioButton';
+import RadioButton from './RadioButton';
 
 const radioStations: RadioItemType[] = [
   { id: 1, name: 'France Inter', url: 'http://direct.fipradio.fr/live/fip-hifi.aac', icon: 'http://direct.fipradio.fr/live/fip-hifi.aac' },
@@ -10,7 +10,7 @@ const radioStations: RadioItemType[] = [
   { id: 3, name: 'FIP', url: 'http://direct.fipradio.fr/live/fip-hifi.aac', icon: '' },
 ];
 
-export default function RadiosScreen() {
+export function RadioViewer() {
   const marantz = useMarantz();
 
   const radioOnPress = (radio: RadioItemType) => {

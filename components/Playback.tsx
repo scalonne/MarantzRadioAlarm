@@ -2,7 +2,7 @@ import { StyleSheet, Button, Text, View, TextInput, TouchableOpacity } from 'rea
 import { Entypo } from '@expo/vector-icons'
 import { useMarantz } from '../providers/MarantzProvider';
 
-export default function PlaybackScreen() {
+export function Playback() {
   const marantz = useMarantz();
 
   const handlePlay = () => {

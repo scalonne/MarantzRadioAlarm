@@ -1,10 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AlarmDayType } from '../types/AlarmDayType';
 import { AlarmTimeType } from '../types/AlarmTimeType';
 import { RadioItemType } from '../types/RadioItemType';
 import NotificationsController from '../services/NotificationsController';
-import { useAppContext } from '../contexts/AppContext';
-import { AlarmContext } from '../contexts/AlarmContext';
+import { AlarmContextType } from '../types/AlarmContextType';
+import { useAppContext } from '../App';
+// import { AlarmContext } from '../contexts/AlarmContext';
+
+export const AlarmContext = createContext<AlarmContextType | null>(null);
+
+export const useAlarmContext = () => {
+    const context = useContext(AlarmContext);
+    if (!context) throw new Error('useAlarm must be used within an AlarmProvider');
+    return context;
+};
 
 export const AlarmProvider = ({ children }: { children: any }) => {
     const context = useAppContext();

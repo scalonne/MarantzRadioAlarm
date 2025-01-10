@@ -1,17 +1,17 @@
 import { useState } from "react";
 import { Text, View, SafeAreaView, TouchableOpacity, StyleSheet } from "react-native";
 import { DateTimePickerAndroid, DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useAlarm } from '../providers/AlarmProvider';
+import { useAlarmContext } from "../providers/AlarmProvider";
 
 export default function AndroidTimePicker() {
+    const context = useAlarmContext();
     const now = new Date();
-    const alarm = useAlarm();
-    const [date, setDate] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate(), alarm.time.hours, alarm.time.minutes ));
+    const [date, setDate] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate(), context.time.hours, context.time.minutes ));
 
     const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
         if (selectedDate) {
             setDate(selectedDate);
-            alarm.timeChanged({ hours: selectedDate.getHours(), minutes: selectedDate.getMinutes() });
+            context.timeChanged({ hours: selectedDate.getHours(), minutes: selectedDate.getMinutes() });
         }
     };
 

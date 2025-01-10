@@ -6,11 +6,11 @@ import {
     GestureDetector,
     GestureHandlerRootView,
 } from 'react-native-gesture-handler';
-import { useAlarm } from '../providers/AlarmProvider';
 import { RadioItemType } from '../types/RadioItemType';
+import { useAlarmContext } from '../providers/AlarmProvider';
 
 export default function RadioButton({ radio, selectedDefault, onClick }: { radio: RadioItemType, selectedDefault: boolean, onClick: { (): void } }) {
-    const alarm = useAlarm();
+    const context = useAlarmContext();
     const offset = useSharedValue<number>(0);
     const selected = useSharedValue<boolean>(selectedDefault);
 
@@ -33,7 +33,7 @@ export default function RadioButton({ radio, selectedDefault, onClick }: { radio
         .maxDuration(250)
         .numberOfTaps(2)
         .onStart(() => {
-            runOnJS(alarm.radioChanged)(radio);
+            runOnJS(context.radioChanged)(radio);
         });
 
     return (

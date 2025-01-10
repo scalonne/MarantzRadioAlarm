@@ -1,14 +1,12 @@
 import { StyleSheet, Button, Text, View, TextInput } from 'react-native';
 
-function AmplifierScreen() {
+export function Amplifier() {
   return (
     <View style={styles.container}>
       <Button title="OnOff" />
     </View>
   );
 }
-
-export default AmplifierScreen;
 
 const styles = StyleSheet.create({
   container: {

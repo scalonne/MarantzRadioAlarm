@@ -2,14 +2,14 @@ import React from 'react';
 import { StyleSheet, Switch, View, Text } from 'react-native';
 import AndroidTimePicker from './AndroidTimePicker';
 import DayButton from './DayButton';
-import { useAlarm } from '../providers/AlarmProvider';
 import { AlarmDayType } from '../types/AlarmDayType';
+import { useAlarmContext } from '../providers/AlarmProvider';
 
 export default function Alarm() {
-    const alarm = useAlarm();
-
+    const context = useAlarmContext();
+    
     function onDayClick(day: AlarmDayType) {
-        alarm.dayChanged({ ...day, isActive: !day.isActive });
+        context.dayChanged({ ...day, isActive: !day.isActive });
     }
 
     return (
@@ -20,7 +20,7 @@ export default function Alarm() {
                 </View>
                 <View style={styles.days}>
                     {
-                        alarm.days.map((day, index) => (
+                        context.days.map((day, index) => (
                             <DayButton
                                 key={index}
                                 label={day.label[0]}
@@ -32,7 +32,7 @@ export default function Alarm() {
                 <View style={styles.radio}>
                     <Text>
                         {
-                            alarm.radio ? alarm.radio.name : "double click on a radio to set it as alarm"
+                            context.radio ? context.radio.name : "double click on a radio to set it as alarm"
                         }
                     </Text>
                 </View>
@@ -40,10 +40,10 @@ export default function Alarm() {
             <View style={styles.rightPanel}>
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={alarm.isActive ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={context.isActive ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={alarm.isActiveChanged}
-                    value={alarm.isActive}
+                    onValueChange={context.isActiveChanged}
+                    value={context.isActive}
                 />
             </View>
         </View>
