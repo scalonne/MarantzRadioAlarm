@@ -1,11 +1,10 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { AlarmDayType } from '../types/AlarmDayType';
 import { AlarmTimeType } from '../types/AlarmTimeType';
-import { RadioItemType } from '../types/RadioItemType';
-import NotificationsController from '../services/NotificationsController';
+import { StationType } from '../types/StationType';
+import { NotificationsController } from '../services/NotificationsController';
 import { AlarmContextType } from '../types/AlarmContextType';
 import { useAppContext } from '../App';
-// import { AlarmContext } from '../contexts/AlarmContext';
 
 export const AlarmContext = createContext<AlarmContextType | null>(null);
 
@@ -18,10 +17,10 @@ export const useAlarmContext = () => {
 export const AlarmProvider = ({ children }: { children: any }) => {
     const context = useAppContext();
 
-    const [days, setDays] = useState<AlarmDayType[]>(context.alarm.days.defaultValue);
-    const [time, setTime] = useState(context.alarm.time.defaultValue);
-    const [isActive, setIsActive] = useState(context.alarm.isActive.defaultValue);
-    const [radio, setRadio] = useState<RadioItemType | null>(context.alarm.radio.defaultValue);
+    const [days, setDays] = useState<AlarmDayType[]>(context.alarm.days.value);
+    const [time, setTime] = useState(context.alarm.time.value);
+    const [isActive, setIsActive] = useState(context.alarm.isActive.value);
+    const [radio, setRadio] = useState<StationType | null>(context.alarm.radio.value);
     const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
@@ -34,23 +33,23 @@ export const AlarmProvider = ({ children }: { children: any }) => {
         init();
     }, []);
 
-    const canNotify = (isActive: boolean, radio: RadioItemType | null, days: AlarmDayType[]) =>
+    const canNotify = (isActive: boolean, radio: StationType | null, days: AlarmDayType[]) =>
         isActive && radio && days && days.find(o => o.isActive);
 
     useEffect(() => {
-        context.alarm.isActive.updateDefaultValue(isActive);
+        context.alarm.isActive.value = isActive;
     }, [isActive]);
 
     useEffect(() => {
-        context.alarm.days.updateDefaultValue(days);
+        context.alarm.days.value = days;
     }, [days]);
 
     useEffect(() => {
-        context.alarm.time.updateDefaultValue(time);
+        context.alarm.time.value = time;
     }, [time]);
 
     useEffect(() => {
-        context.alarm.radio.updateDefaultValue(radio);
+        context.alarm.radio.value = radio;
     }, [radio]);
 
     const isActiveChanged = (isActive: boolean) => {
@@ -84,7 +83,7 @@ export const AlarmProvider = ({ children }: { children: any }) => {
             NotificationsController.createManyAsync(days, time, radio);
     }
 
-    const radioChanged = (radio: RadioItemType) => {
+    const radioChanged = (radio: StationType) => {
         console.log("radio changed: " + radio.name);
         setRadio(radio);
 

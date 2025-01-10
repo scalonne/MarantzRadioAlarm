@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
-import MarantzController from '../services/MarantzController';
+import { MarantzController } from '../services/MarantzController';
 
 type MarantzContextType = {
     controller: MarantzController;

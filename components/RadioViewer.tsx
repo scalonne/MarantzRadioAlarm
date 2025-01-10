@@ -1,21 +1,19 @@
-import React from 'react';
-import { StyleSheet, ScrollView, Text, View, TextInput, TouchableOpacity } from 'react-native';
-import { useMarantz } from '../providers/MarantzProvider';
-import { RadioItemType } from '../types/RadioItemType';
+import React, { useState } from 'react';
+import { StyleSheet, ScrollView, View } from 'react-native';
+import { StationType } from '../types/StationType';
 import RadioButton from './RadioButton';
-
-const radioStations: RadioItemType[] = [
-  { id: 1, name: 'France Inter', url: 'http://direct.fipradio.fr/live/fip-hifi.aac', icon: 'http://direct.fipradio.fr/live/fip-hifi.aac' },
-  { id: 2, name: 'France Culture', url: 'http://direct.franceculture.fr/live/franceculture-hifi.aac', icon: 'https://via.placeholder.com/50' },
-  { id: 3, name: 'FIP', url: 'http://direct.fipradio.fr/live/fip-hifi.aac', icon: '' },
-];
+import { useAppContext } from '../App';
 
 export function RadioViewer() {
-  const marantz = useMarantz();
+  const context = useAppContext();
 
-  const radioOnPress = (radio: RadioItemType) => {
+  const [stations, setStations] = useState(context.radio.stations.value);
+  const [station, setStation] = useState(context.radio.station.value);
+
+  const radioOnPress = (radio: StationType) => {
     console.log("radio onpress: " + radio.url);
-    marantz.setSelectedRadioUrl(radio.url);
+    setStation(radio);
+    context.radio.station.value = radio;
   };
 
   return (
@@ -29,7 +27,7 @@ export function RadioViewer() {
       //snapToInterval={120} // Taille d’un item + margin
       //decelerationRate="fast"
       >
-        {radioStations.map((o, index) => (
+        {stations.map((o, index) => (
           <RadioButton key={index} radio={o} selectedDefault={false} onClick={() => radioOnPress(o)} />
           // <View key={index} style={styles.item}>
           //   <TouchableOpacity

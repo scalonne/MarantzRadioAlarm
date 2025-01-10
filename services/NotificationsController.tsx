@@ -1,11 +1,11 @@
 import { AlarmDayType } from "../types/AlarmDayType";
-import { RadioItemType } from "../types/RadioItemType";
+import { StationType } from "../types/StationType";
 import { AlarmTimeType } from "../types/AlarmTimeType";
 import * as Notifications from 'expo-notifications';
 import { SchedulableTriggerInputTypes } from "expo-notifications";
 import { playRadioAtAlarm } from '../providers/MarantzProvider';
 
-export default class NotificationsController {
+export class NotificationsController {
     private constructor() {
     }
 
@@ -39,7 +39,7 @@ export default class NotificationsController {
         await Notifications.cancelAllScheduledNotificationsAsync();
     }
 
-    public static async createManyAsync(days: AlarmDayType[], time: AlarmTimeType, radio: RadioItemType) {
+    public static async createManyAsync(days: AlarmDayType[], time: AlarmTimeType, radio: StationType) {
         await Promise.all(days
             .filter(day => day.isActive)
             .map(async (day) => await NotificationsController.createAsync(day, time, radio)));
@@ -47,7 +47,7 @@ export default class NotificationsController {
             console.log('notifications count: ' + x.length);
     }
 
-    public static async createAsync(day: AlarmDayType, time: AlarmTimeType, radio: RadioItemType) {
+    public static async createAsync(day: AlarmDayType, time: AlarmTimeType, radio: StationType) {
         const notificationId = NotificationsController.getNotificationId(day);
 
         await Notifications.scheduleNotificationAsync({

@@ -6,10 +6,10 @@ import {
     GestureDetector,
     GestureHandlerRootView,
 } from 'react-native-gesture-handler';
-import { RadioItemType } from '../types/RadioItemType';
+import { StationType } from '../types/StationType';
 import { useAlarmContext } from '../providers/AlarmProvider';
 
-export default function RadioButton({ radio, selectedDefault, onClick }: { radio: RadioItemType, selectedDefault: boolean, onClick: { (): void } }) {
+export default function RadioButton({ radio, selectedDefault, onClick }: { radio: StationType, selectedDefault: boolean, onClick: { (): void } }) {
     const context = useAlarmContext();
     const offset = useSharedValue<number>(0);
     const selected = useSharedValue<boolean>(selectedDefault);
@@ -19,7 +19,6 @@ export default function RadioButton({ radio, selectedDefault, onClick }: { radio
             { translateX: offset.value },
             { scale: withTiming(selected.value ? 1.2 : 1) },
         ],
-        //backgroundColor: selected.value ? '#FFE04B' : '#b58df1',
         backgroundColor: selected.value ? 'green' : 'red',
     }));
 

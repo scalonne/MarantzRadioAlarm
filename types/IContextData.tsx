@@ -1,7 +1,9 @@
-import MarantzController from "../services/MarantzController";
-import { IAlarmData } from "./IAlarmData";
+import { IAmplifierController, MarantzController } from "../services/MarantzController";
+import { IAlarmContext } from "./IAlarmContext";
+import { IRadioContext } from "./IRadioContext";
 
 export interface IContextData {
-  marantzController: MarantzController;
-  alarm: IAlarmData;
+  amplifierController: IAmplifierController;
+  radio: IRadioContext
+  alarm: IAlarmContext;
 }

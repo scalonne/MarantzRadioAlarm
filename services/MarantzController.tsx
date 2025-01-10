@@ -1,17 +1,57 @@
 import TcpSocket from 'react-native-tcp-socket';
 import { Buffer } from 'buffer';
+import { EventEmitter } from 'expo-modules-core';
 
-export default class MarantzController {
+export enum AmplifierState {
+    Connecting,
+    Connected,
+    Disconnected,
+}
+
+export interface IAmplifierController {
+    state: AmplifierState,
+    onConnect(callback: (data?: any) => void): void;
+    onDisconnect(callback: (data?: any) => void): void;
+    play(streamUrl: string): void;
+    resume(): void;
+    pause(): void;
+    stop(): void;
+    volumUp(): void;
+    volumDown(): void;
+}
+
+export class MarantzController implements IAmplifierController {
     private socket: TcpSocket.Socket | undefined;
     private playerId: string | undefined;
-    private isConnected: boolean = false;
+    private eventEmitter = new EventEmitter<Record<string, () => void>>();
+    public state: AmplifierState = AmplifierState.Disconnected;
+
+    private notifyStateChange(state: AmplifierState) {
+        this.eventEmitter.emit(state.toString());
+    }
+
+    onConnect(callback: (data?: any) => void) {
+        this.eventEmitter.addListener(AmplifierState.Connected.toString(), callback);
+    }
+
+    onDisconnect(callback: (data?: any) => void) {
+        this.eventEmitter.addListener(AmplifierState.Disconnected.toString(), callback);
+    }
 
     constructor() {
-        console.log("new MarantzController");
+        console.debug("new MarantzController");
     }
 
     destroy() {
         this.socket?.destroy();
+    }
+
+    tryConnect() {
+        if (this.socket?.readyState == 'open')
+            return true;
+
+        if (this.socket?.readyState == undefined)
+            this.init();
     }
 
     init() {
@@ -20,35 +60,28 @@ export default class MarantzController {
         const options = {
             port: 1255,
             host: "192.168.1.60",
-            //localAddress: '127.0.0.1',
-            //reuseAddress: true,
-            // interface: "wifi",
         };
 
         this.socket = TcpSocket.createConnection(options, () => {
-            console.log(`TcpSocket.createConnection success ${options.host}:${options.port}}`);
-            this.isConnected = true;
+            console.log(`socket created: ${options.host}:${options.port}}`);
+            this.notifyStateChange(AmplifierState.Connected);
         });
 
         this.socket.on('data', function (data) {
             var str = data instanceof Buffer
-                ?
-                Buffer.from(data.buffer).toString()
-                //new TextDecoder().decode(data) 
+                ? Buffer.from(data.buffer).toString()
                 : data;
-            if (data instanceof Buffer)
-                console.log("test buffer")
-            else
-                console.log("test str")
-            console.log('message was received', str);
+
+            console.log('socket read: ', str);
         });
 
         this.socket.on('error', function (error) {
-            console.log(error);
+            console.warn('socket error: ', error);
         });
 
-        this.socket.on('close', function () {
-            console.log('Connection closed!');
+        this.socket.on('close', () => {
+            console.warn('socket closed');
+            this.notifyStateChange(AmplifierState.Disconnected);
         });
     }
 
@@ -60,8 +93,15 @@ export default class MarantzController {
     }
 
     private send(command: string, args: Record<string, string>[] | undefined) {
-        if (!this.isConnected) {
-            console.debug("Not connected");
+        console.log(`send ${command}`);
+        console.log(`args ${args}`);
+
+        if (this.socket?.readyState != 'open') {
+            console.debug("socket is not connected");
+
+            if (this.socket?.readyState == "opening")
+                this.init();
+
             return;
         }
 
@@ -81,7 +121,6 @@ export default class MarantzController {
     }
 
     public play(url: string) {
-        console.log("PLAY:" + url)
         this.send(this.commands.PlayStream, [{ "url": url }]);
     }
 

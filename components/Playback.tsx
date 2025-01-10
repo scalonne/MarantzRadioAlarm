@@ -1,13 +1,21 @@
-import { StyleSheet, Button, Text, View, TextInput, TouchableOpacity } from 'react-native';
+import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Entypo } from '@expo/vector-icons'
-import { useMarantz } from '../providers/MarantzProvider';
+import { useAppContext } from '../App';
+import { useEffect, useState } from 'react';
 
 export function Playback() {
-  const marantz = useMarantz();
+  var context = useAppContext();
+  var [station, setStation] = useState(context.radio.station.value);
+
+  useEffect(() => {
+    context.radio.station.subscribeOnChange((newValue) => {
+      setStation(newValue);
+    });
+  }, []);
 
   const handlePlay = () => {
-    if (marantz.selectedRadioUrl) {
-      marantz.controller.play(marantz.selectedRadioUrl); // Joue la radio sélectionnée
+    if (station) {
+      context.amplifierController.play(station.url);
     }
   };
 
@@ -25,21 +33,21 @@ export function Playback() {
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => marantz.controller.stop()}
+          onPress={() => context.amplifierController.stop()}
           style={[styles.button]}>
           <Entypo name="controller-stop" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => marantz.controller.volumUp()}
+          onPress={() => context.amplifierController.volumUp()}
           style={[styles.button]}>
           <Entypo name="arrow-up" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => marantz.controller.volumDown()}
+          onPress={() => context.amplifierController.volumDown()}
           style={[styles.button]}>
           <Entypo name="arrow-down" size={24} color="black" />
         </TouchableOpacity>

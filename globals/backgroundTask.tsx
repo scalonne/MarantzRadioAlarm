@@ -1,5 +1,5 @@
 import * as TaskManager from 'expo-task-manager';
-import MarantzController from '../services/MarantzController';
+import { MarantzController } from '../services/MarantzController';
 
 const TASK_NAME = "RADIO_ALARM_TASK";
 
