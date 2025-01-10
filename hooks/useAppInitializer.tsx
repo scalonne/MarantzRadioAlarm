@@ -32,14 +32,14 @@ export const useAppInitializer = (): [isLoading: boolean, context: IContextData 
     },
     {
       id: 2,
-      uid: "33960c43-0464-44b4-abfa-73591ebf647f",
+      uid: "6a1440b2-e6f0-11e9-a96c-52543be04c81",
       name: 'France Culture',
       url: 'http://icecast.radiofrance.fr/franceculture-hifi.aac',
       icon: 'https://upload.wikimedia.org/wikipedia/fr/thumb/c/c9/France_Culture_-_2008.svg/1024px-France_Culture_-_2008.svg.png'
     },
     {
       id: 3,
-      uid: "33960c43-0464-44b4-abfa-73591ebf647f",
+      uid: "932eb148-e6f6-11e9-a96c-52543be04c81",
       name: 'FIP',
       url: 'http://direct.fipradio.fr/live/fip-hifi.aac',
       icon: 'https://upload.wikimedia.org/wikipedia/fr/thumb/d/d5/FIP_logo_2005.svg/1024px-FIP_logo_2005.svg.png'

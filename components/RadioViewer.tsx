@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { StationType } from '../types/StationType';
 import RadioButton from './RadioButton';
@@ -10,10 +10,13 @@ export function RadioViewer() {
   const [stations, setStations] = useState(context.radio.stations.value);
   const [station, setStation] = useState(context.radio.station.value);
 
-  const radioOnPress = (radio: StationType) => {
-    console.log("radio onpress: " + radio.url);
-    setStation(radio);
-    context.radio.station.value = radio;
+  useEffect(() => {
+    context.radio.station.value = station;
+  }, [station]);
+
+  const stationOnClick = (newStation: StationType) => {
+    console.log("stationOnClick: " + newStation.name);
+    setStation(newStation);
   };
 
   return (
@@ -24,20 +27,9 @@ export function RadioViewer() {
         centerContent
         showsHorizontalScrollIndicator={false}
         snapToAlignment="center"
-      //snapToInterval={120} // Taille d’un item + margin
-      //decelerationRate="fast"
       >
         {stations.map((o, index) => (
-          <RadioButton key={index} radio={o} selectedDefault={false} onClick={() => radioOnPress(o)} />
-          // <View key={index} style={styles.item}>
-          //   <TouchableOpacity
-          //     onPress={() => radioOnPress(o)}
-          //     style={[
-          //       styles.item,
-          //     ]}>
-          //     <Text>{o.name}</Text>
-          //   </TouchableOpacity>
-          // </View>
+          <RadioButton key={index} radio={o} selected={station?.uid === o.uid} onClick={() => stationOnClick(o)} />
         ))}
       </ScrollView>
     </View>

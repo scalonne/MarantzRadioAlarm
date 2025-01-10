@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { StyleSheet, Switch, Button, Text, View } from 'react-native';
-import Animated, { runOnJS, useSharedValue, withSpring, withTiming, withSequence, withDecay, withRepeat, Easing, useAnimatedProps, useAnimatedStyle } from 'react-native-reanimated';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Switch, Button, Text, View, ImageBackground } from 'react-native';
+import Animated, { runOnJS, useSharedValue, withSpring, withTiming, withSequence, withDecay, withRepeat, Easing, useAnimatedProps, useAnimatedStyle, interpolateColor } from 'react-native-reanimated';
 import {
     Gesture,
     GestureDetector,
@@ -9,18 +9,30 @@ import {
 import { StationType } from '../types/StationType';
 import { useAlarmContext } from '../providers/AlarmProvider';
 
-export default function RadioButton({ radio, selectedDefault, onClick }: { radio: StationType, selectedDefault: boolean, onClick: { (): void } }) {
+export default function RadioButton({ radio, selected, onClick }: { radio: StationType, selected: boolean, onClick: { (): void } }) {
     const context = useAlarmContext();
     const offset = useSharedValue<number>(0);
-    const selected = useSharedValue<boolean>(selectedDefault);
+    const backgroundColor = useSharedValue(0);
 
-    const animatedStyles = useAnimatedStyle(() => ({
-        transform: [
-            { translateX: offset.value },
-            { scale: withTiming(selected.value ? 1.2 : 1) },
-        ],
-        backgroundColor: selected.value ? 'green' : 'red',
-    }));
+    useEffect(() => {
+        backgroundColor.value = selected ? 1 : 0;// 'green' : 'red';
+    }, [selected]);
+
+    const animatedStyles = useAnimatedStyle(() => {
+        return {
+            transform: [
+                { translateX: offset.value },
+                { scale: withTiming(selected ? 1.2 : 1) },
+            ],
+            //backgroundColor: backgroundColor.value,
+            //backgroundColor: interpolateColor(
+            //    backgroundColor.value,
+            //    [0, 1],
+            //    ["rgba(255, 255, 255, 0.5)", "rgba(0, 128, 0, 0.8)"],
+            //    //["red", "green"] // Rouge par défaut, Vert si sélectionné
+            //),
+        }
+    }, [selected]);
 
     const singleTap = Gesture.Tap()
         .maxDuration(250)
@@ -35,11 +47,20 @@ export default function RadioButton({ radio, selectedDefault, onClick }: { radio
             runOnJS(context.radioChanged)(radio);
         });
 
+    console.log('radio.icon: ' + radio.icon);
+
     return (
         <View style={styles.container}>
             <GestureDetector gesture={Gesture.Exclusive(doubleTap, singleTap)}>
                 <Animated.View style={[styles.button, animatedStyles]}>
-                    <Text>{radio.name}</Text>
+                    <ImageBackground
+                        source={{ uri: radio.icon }}
+                        style={styles.imageBackground}
+                        resizeMode="cover">
+                        {/* <Text style={styles.text}>
+                            {radio.name}
+                        </Text> */}
+                    </ImageBackground>
                 </Animated.View>
             </GestureDetector>
         </View>
@@ -48,36 +69,32 @@ export default function RadioButton({ radio, selectedDefault, onClick }: { radio
 
 const styles = StyleSheet.create({
     container: {
-        backgroundColor: 'orange',
         flex: 1,
+        backgroundColor: 'orange',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         width: '100%',
     },
-    text: {
-        flex: 5,
-        backgroundColor: 'yellow',
-        justifyContent: 'flex-start',
-        alignItems: 'flex-start',
-    },
-    // section: {
-    //     flexDirection: 'row',
-    //     alignItems: 'center',
-    // },
-    circle2: {
-        //height: '40%',
-        //width: '60%',
-        //borderRadius: 10,
-        backgroundColor: "green",
-        alignItems: 'center',
-    },
     button: {
         width: 100,
         height: 100,
         margin: 10,
-        backgroundColor: '#ddd',
-        justifyContent: 'center',
-        alignItems: 'center',
+        borderRadius: 10,
+        overflow: "hidden",
+    },
+    imageBackground: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    text: {
+        fontWeight: "bold",
+        color: "white",
+        backgroundColor: "rgba(0, 0, 0, 0.75)",
+        //borderRadius: 5,
+        paddingHorizontal: 5,
+        paddingVertical: 2,
+        textAlign: "center",
     },
 });
