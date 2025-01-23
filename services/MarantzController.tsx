@@ -21,10 +21,20 @@ export interface IAmplifierController {
 }
 
 export class MarantzController implements IAmplifierController {
+    private static instance: MarantzController;
+
     private socket: TcpSocket.Socket | undefined;
     private playerId: string | undefined;
     private eventEmitter = new EventEmitter<Record<string, () => void>>();
     public state: AmplifierState = AmplifierState.Disconnected;
+
+    public static getInstance() {
+        if (!MarantzController.instance) {
+            MarantzController.instance = new MarantzController();
+        }
+
+        return MarantzController.instance;
+    }
 
     private notifyStateChange(state: AmplifierState) {
         this.eventEmitter.emit(state.toString());
@@ -34,11 +44,15 @@ export class MarantzController implements IAmplifierController {
         this.eventEmitter.addListener(AmplifierState.Connected.toString(), callback);
     }
 
+    offConnect(callback: (data?: any) => void) {
+        this.eventEmitter.removeListener(AmplifierState.Connected.toString(), callback);
+    }
+
     onDisconnect(callback: (data?: any) => void) {
         this.eventEmitter.addListener(AmplifierState.Disconnected.toString(), callback);
     }
 
-    constructor() {
+    private constructor() {
         console.debug("new MarantzController");
     }
 
@@ -63,7 +77,7 @@ export class MarantzController implements IAmplifierController {
         };
 
         this.socket = TcpSocket.createConnection(options, () => {
-            console.log(`socket created: ${options.host}:${options.port}}`);
+            console.log(`socket created: ${options.host}:${options.port}`);
             this.notifyStateChange(AmplifierState.Connected);
         });
 
@@ -82,6 +96,23 @@ export class MarantzController implements IAmplifierController {
         this.socket.on('close', () => {
             console.warn('socket closed');
             this.notifyStateChange(AmplifierState.Disconnected);
+        });
+
+        return new Promise(async (resolve, reject) => {
+            let retry = 3;
+
+            while (true) {
+                if (this.socket?.readyState == 'open') {
+                    resolve(true);
+                    break;
+                }
+
+                await new Promise(f => setTimeout(f, 1000));
+
+                retry--;
+            }
+
+            reject(false);
         });
     }
 
@@ -149,3 +180,4 @@ export class MarantzController implements IAmplifierController {
     }
 }
 
+export const storage = MarantzController.getInstance();
