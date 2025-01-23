@@ -14,20 +14,29 @@ export const AppContext = createContext<IContextData | null>(null);
 export const useAppContext = () => useContext(AppContext)!;
 
 export default function App() {
-  const [isLoading, context] = useAppInitializer();
+  const [appInitialized] = useAppInitializer();
 
   useEffect(() => {
-    if (!isLoading)
+    if (appInitialized) {
       SplashScreen.hideAsync();
-  }, [isLoading]);
+    }
+  }, [appInitialized]);
 
-  return isLoading ? null : (
-    <AppContext.Provider value={context}>
-      <MarantzProvider>
+  console.debug(" - App: appInitialized ", appInitialized);
+
+  return !appInitialized ? null : (
+    <SafeAreaProvider>
+      <SafeAreaView style={styles.container}>
         <GestureHandlerRootView >
           <HomeScreen />
         </GestureHandlerRootView>
-      </MarantzProvider>
-    </AppContext.Provider>
+      </SafeAreaView>
+    </SafeAreaProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  }
+});

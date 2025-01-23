@@ -1,16 +1,17 @@
-import { useStorageFetch } from "./useStorageFetch";
 import { MarantzController } from "../services/MarantzController";
 import { AlarmDayType } from "../types/AlarmDayType";
-import { AlarmTimeType } from "../types/AlarmTimeType";
 import { StationType } from "../types/StationType";
-import { IContextData } from "../types/IContextData";
-import { PersistedData } from "../models/PersistedData";
 import { useEffect, useRef, useState } from "react";
+import * as FileSystem from 'expo-file-system';
+import { useStore } from "./useAlarmStore";
+import { useShallow } from "zustand/react/shallow";
 
-export const useAppInitializer = (): [isLoading: boolean, context: IContextData | null] => {
-  const [isLoading, setIsLoading] = useState(true);
+export const useAppInitializer = (): [isLoading: boolean] => {
+  const hasHydrated = useStore(useShallow((state) => state._hasHydrated));
+  const [appInitialized, setAppInitialized] = useState(false);
+
+  // to delete
   const marantzController = useRef<MarantzController | null>(null);
-  const context = useRef<IContextData | null>(null);
 
   const defaultDays: AlarmDayType[] = [
     { label: 'Lundi', isActive: true, weekDay: 2 },
@@ -27,62 +28,160 @@ export const useAppInitializer = (): [isLoading: boolean, context: IContextData 
       id: 1,
       uid: "33960c43-0464-44b4-abfa-73591ebf647f",
       name: 'France Inter',
-      url: 'https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8?id=radiofrance',
-      icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/France_Inter_logo_2021.svg/1200px-France_Inter_logo_2021.svg.png'
+      streamUri: 'https://stream.radiofrance.fr/franceinter/franceinter_hifi.m3u8?id=radiofrance',
+      iconUri: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a0/France_Inter_logo_2021.svg/1200px-France_Inter_logo_2021.svg.png',
+      localIconUri: null
     },
     {
       id: 2,
       uid: "6a1440b2-e6f0-11e9-a96c-52543be04c81",
       name: 'France Culture',
-      url: 'http://icecast.radiofrance.fr/franceculture-hifi.aac',
-      icon: 'https://upload.wikimedia.org/wikipedia/fr/thumb/c/c9/France_Culture_-_2008.svg/1024px-France_Culture_-_2008.svg.png'
+      streamUri: 'http://icecast.radiofrance.fr/franceculture-hifi.aac',
+      iconUri: 'https://upload.wikimedia.org/wikipedia/fr/thumb/c/c9/France_Culture_-_2008.svg/1024px-France_Culture_-_2008.svg.png',
+      localIconUri: null
     },
     {
       id: 3,
       uid: "932eb148-e6f6-11e9-a96c-52543be04c81",
       name: 'FIP',
-      url: 'http://direct.fipradio.fr/live/fip-hifi.aac',
-      icon: 'https://upload.wikimedia.org/wikipedia/fr/thumb/d/d5/FIP_logo_2005.svg/1024px-FIP_logo_2005.svg.png'
+      streamUri: 'http://direct.fipradio.fr/live/fip-hifi.aac',
+      iconUri: 'https://upload.wikimedia.org/wikipedia/fr/thumb/d/d5/FIP_logo_2005.svg/1024px-FIP_logo_2005.svg.png',
+      localIconUri: null
     },
   ];
 
-  // radio
-  const stationsStorage = useStorageFetch<StationType[]>("STORAGE_RADIO_STATIONS", defaultStations);
-  const stationStorage = useStorageFetch<StationType | null>("STORAGE_RADIO_STATION", defaultStations[0]);
+  const downloadIcons = async () => {
+    const stations = useStore.getState().stations;
+    const STATIONS_FOLDER = 'stations';
 
-  // alarm
-  const daysStorage = useStorageFetch<AlarmDayType[]>("STORAGE_ALARM_DAYS", defaultDays);
-  const timeStorage = useStorageFetch<AlarmTimeType>("STORAGE_ALARM_TIME", { hours: 6, minutes: 0 });
-  const radioStorage = useStorageFetch<StationType | null>("STORAGE_ALARM_RADIO", null);
-  const isActiveStorage = useStorageFetch<boolean>("STORAGE_ALARM_ISACTIVE", true);
+    await FileManager.createDirectoryAsync(STATIONS_FOLDER);
 
-  const storageArray = [stationStorage, stationStorage, daysStorage, radioStorage, timeStorage, isActiveStorage];
+    const stationFolders = await FileManager.getSubDirectoriesAsync(STATIONS_FOLDER);
+
+    console.log("stationFolders: ", JSON.stringify(stationFolders));
+    console.log("stationsStorage: ", stations);
+
+    const toRemove = stationFolders.filter(o => !stations.find(p => p.uid === o));
+    const toDownload = stations.filter(o => o.iconUri && (!o.localIconUri || !stationFolders.find(p => p === o.uid)));
+
+    console.log("toRemove: ", JSON.stringify(toRemove));
+    console.log("toDownload: ", JSON.stringify(toDownload));
+
+    await Promise.all(toRemove.map(async o =>
+      await FileManager.deleteFileAsync(`${STATIONS_FOLDER}/${o}`)
+    ));
+
+    if (toDownload.length > 0) {
+      await Promise.all(toDownload.map(async o =>
+        await FileManager
+          .downloadImage(o.iconUri!, `${STATIONS_FOLDER}/${o.uid}`, "icon")
+          .then((iconLocalPath) => { o.localIconUri = iconLocalPath; })
+      )).then(() => {
+        useStore.setState({ stations: stations });
+      });
+    }
+  }
 
   useEffect(() => {
-    marantzController.current = new MarantzController();
-    marantzController.current.init();
-  }, []);
-
-  useEffect(() => {
-    if (storageArray.find(o => o.isLoading))
+    if (!hasHydrated)
       return;
 
-    context.current = {
-      amplifierController: marantzController.current!,
-      radio: {
-        stations: new PersistedData(stationsStorage),
-        station: new PersistedData(stationStorage)
-      },
-      alarm: {
-        days: new PersistedData(daysStorage),
-        time: new PersistedData(timeStorage),
-        radio: new PersistedData(radioStorage),
-        isActive: new PersistedData(isActiveStorage),
-      }
+    downloadIcons()
+      .catch((error) => console.error("Error downloading icons: ", error))
+      .finally(() => {
+        setAppInitialized(true);
+      });
+  }, [hasHydrated]);
+
+  return [appInitialized];
+}
+
+export class FileManager {
+  static ROOT_DIRECTORY = FileSystem.documentDirectory;
+
+  private constructor() {
+  }
+
+  public static async createDirectoryAsync(directory: string): Promise<void> {
+    const path = `${this.ROOT_DIRECTORY}${directory}`;
+    const pathFi = await FileSystem.getInfoAsync(path);
+
+    if (!pathFi.exists || !pathFi.isDirectory) {
+      await FileSystem.makeDirectoryAsync(path, { intermediates: true });
+
+      console.log(`directory ${directory} created at ${path}`);
+    }
+  }
+
+  public static async getSubDirectoriesAsync(directory: string): Promise<string[]> {
+    const path = `${this.ROOT_DIRECTORY}${directory}`;
+    const pathFi = await FileSystem.getInfoAsync(path);
+
+    if (!pathFi.exists || !pathFi.isDirectory) {
+      console.error(`directory ${directory} not found`);
+      return [];
     }
 
-    setIsLoading(false);
-  }, storageArray.map(o => o.isLoading));
+    const content = await FileSystem.readDirectoryAsync(path);
+    const subDirectories = content.filter(async (o) => {
+      const fi = await FileSystem.getInfoAsync(o);
 
-  return [isLoading, context.current];
+      return fi.exists && fi.isDirectory;
+    });
+
+    console.log(`- ${path}`);
+    subDirectories.forEach(o => console.log(`-- ${o}`));
+
+    return subDirectories;
+  }
+
+  public static async deleteFileAsync(fileUri: string): Promise<void> {
+    const path = `${this.ROOT_DIRECTORY}${fileUri}`;
+
+    await FileSystem.deleteAsync(path)
+      .then(() => console.log(`file ${fileUri} removed`))
+      .catch((error) => console.error("Error deleting file: ", error));
+  }
+
+  public static async getFileInfoAsync(fileUri: string): Promise<FileSystem.FileInfo> {
+    return await FileSystem.getInfoAsync(fileUri);
+  }
+
+  private static async getMimeType(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url, { method: 'HEAD' });
+      const contentType = response.headers.get('Content-Type');
+
+      return contentType;
+    } catch (error) {
+      console.error("Failed to fetch MIME type:", error);
+      return null;
+    }
+  }
+
+  public static async downloadImage(imageUrl: string, relativePath: string, fileNameWithoutExtension: string): Promise<string | null> {
+    try {
+      const mime = await this.getMimeType(imageUrl);
+      const allowedMimes = ['image/png', 'image/jpeg', 'image/jpg'];
+
+      if (!mime || !allowedMimes.includes(mime) || fileNameWithoutExtension.includes('.')) {
+        return null;
+      }
+
+      const extension = mime.split('/')[1];
+      const directory = `${FileSystem.documentDirectory}${relativePath}`;
+      const filePath = `${directory}/${fileNameWithoutExtension}.${extension}`;
+
+      await FileSystem.makeDirectoryAsync(directory, { intermediates: true });
+      await FileSystem.downloadAsync(imageUrl, filePath);
+
+      console.log(`image downloaded: ${filePath}`);
+
+      return filePath;
+    } catch (error) {
+      console.error("Error downloading the image: ", error);
+
+      return null;
+    }
+  }
 }

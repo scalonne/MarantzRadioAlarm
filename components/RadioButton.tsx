@@ -1,16 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Switch, Button, Text, View, ImageBackground } from 'react-native';
-import Animated, { runOnJS, useSharedValue, withSpring, withTiming, withSequence, withDecay, withRepeat, Easing, useAnimatedProps, useAnimatedStyle, interpolateColor } from 'react-native-reanimated';
+import React, { useEffect } from 'react';
+import { StyleSheet, Text, View, ImageBackground } from 'react-native';
+import Animated, { runOnJS, useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import {
     Gesture,
     GestureDetector,
-    GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 import { StationType } from '../types/StationType';
-import { useAlarmContext } from '../providers/AlarmProvider';
+import { useStore } from '../hooks/useAlarmStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function RadioButton({ radio, selected, onClick }: { radio: StationType, selected: boolean, onClick: { (): void } }) {
-    const context = useAlarmContext();
+    const [alarmStation, setAlarmStation] = useStore(useShallow((state) => [state.alarmRadio, state.setAlarmRadio]));
+
     const offset = useSharedValue<number>(0);
     const backgroundColor = useSharedValue(0);
 
@@ -44,23 +45,25 @@ export default function RadioButton({ radio, selected, onClick }: { radio: Stati
         .maxDuration(250)
         .numberOfTaps(2)
         .onStart(() => {
-            runOnJS(context.radioChanged)(radio);
+            runOnJS(setAlarmStation)(radio);
         });
-
-    console.log('radio.icon: ' + radio.icon);
 
     return (
         <View style={styles.container}>
             <GestureDetector gesture={Gesture.Exclusive(doubleTap, singleTap)}>
                 <Animated.View style={[styles.button, animatedStyles]}>
-                    <ImageBackground
-                        source={{ uri: radio.icon }}
-                        style={styles.imageBackground}
-                        resizeMode="cover">
-                        {/* <Text style={styles.text}>
-                            {radio.name}
-                        </Text> */}
-                    </ImageBackground>
+                    {
+                        radio.iconUri ?
+                            <ImageBackground
+                                source={{ uri: radio.iconUri }}
+                                style={styles.imageBackground}
+                                resizeMode="cover">
+                            </ImageBackground>
+                            :
+                            <Text style={styles.text}>
+                                {radio.name}
+                            </Text>
+                    }
                 </Animated.View>
             </GestureDetector>
         </View>

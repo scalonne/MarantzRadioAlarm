@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
-import { StyleSheet, Switch, Button, Text, View } from 'react-native';
-import Animated, { runOnJS, useSharedValue, withSpring, withTiming, withSequence, withDecay, withRepeat, Easing, useAnimatedProps, useAnimatedStyle } from 'react-native-reanimated';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import Animated, { runOnJS, useSharedValue, withSpring, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import {
     Gesture,
     GestureDetector,
-    GestureHandlerRootView,
 } from 'react-native-gesture-handler';
 
 export default function DayButton({ label, selectedDefault, onClick }: { label: string, selectedDefault: boolean, onClick: { (): void } }) {

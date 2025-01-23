@@ -1,27 +1,26 @@
 import React from 'react';
-import { StyleSheet, Button, Text, View, TextInput } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Amplifier } from '../components/Amplifier';
 import { Playback } from '../components/Playback';
 import { RadioViewer } from '../components/RadioViewer';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { AlarmProvider } from '../providers/AlarmProvider';
+import { NotificationsProvider } from '../providers/NotificationsProvider';
 import Alarm from '../components/Alarm';
 
-function HomeScreen() {
+export function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.amplifier}>
         <Amplifier />
       </View>
       <View style={styles.alarmContainer}>
-        <AlarmProvider>
+        <NotificationsProvider>
           <View style={styles.alarm}>
             <Alarm />
           </View>
           <View style={styles.radios}>
             <RadioViewer />
           </View>
-        </AlarmProvider>
+        </NotificationsProvider>
       </View>
       <View style={styles.playback}>
         <Playback />
@@ -29,8 +28,6 @@ function HomeScreen() {
     </View>
   );
 }
-
-export default HomeScreen;
 
 const styles = StyleSheet.create({
   container: {

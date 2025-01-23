@@ -2,14 +2,17 @@ import React from 'react';
 import { StyleSheet, Switch, View, Text } from 'react-native';
 import AndroidTimePicker from './AndroidTimePicker';
 import DayButton from './DayButton';
-import { AlarmDayType } from '../types/AlarmDayType';
-import { useAlarmContext } from '../providers/AlarmProvider';
+import { useStore } from '../hooks/useAlarmStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export default function Alarm() {
-    const context = useAlarmContext();
-    
-    function onDayClick(day: AlarmDayType) {
-        context.dayChanged({ ...day, isActive: !day.isActive });
+    const [alarmIsActive, setAlarmIsActive] = useStore(useShallow((state) => [state.alarmIsActive, state.setAlarmIsActive]));
+    const [days, setDays] = useStore(useShallow((state) => [state.alarmDays, state.setAlarmDays]));
+    const station = useStore(useShallow((state) => state.alarmRadio));
+
+    function onDayClick(index: number) {
+        days[index] = !days[index];
+        //setDays(days);
     }
 
     return (
@@ -20,19 +23,19 @@ export default function Alarm() {
                 </View>
                 <View style={styles.days}>
                     {
-                        context.days.map((day, index) => (
+                        days.map((active, index) => (
                             <DayButton
                                 key={index}
-                                label={day.label[0]}
-                                selectedDefault={day.isActive}
-                                onClick={() => onDayClick(day)} />
+                                label={index.toString()}
+                                selectedDefault={active}
+                                onClick={() => onDayClick(index)} />
                         ))
                     }
                 </View>
                 <View style={styles.radio}>
                     <Text>
                         {
-                            context.radio ? context.radio.name : "double click on a radio to set it as alarm"
+                            station?.name ?? "double click on a radio to set it as alarm"
                         }
                     </Text>
                 </View>
@@ -40,10 +43,10 @@ export default function Alarm() {
             <View style={styles.rightPanel}>
                 <Switch
                     trackColor={{ false: '#767577', true: '#81b0ff' }}
-                    thumbColor={context.isActive ? '#f5dd4b' : '#f4f3f4'}
+                    thumbColor={alarmIsActive ? '#f5dd4b' : '#f4f3f4'}
                     ios_backgroundColor="#3e3e3e"
-                    onValueChange={context.isActiveChanged}
-                    value={context.isActive}
+                    onValueChange={setAlarmIsActive}
+                    value={alarmIsActive}
                 />
             </View>
         </View>

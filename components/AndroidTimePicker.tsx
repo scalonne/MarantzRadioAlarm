@@ -1,21 +1,22 @@
-import { useState } from "react";
-import { Text, View, SafeAreaView, TouchableOpacity, StyleSheet } from "react-native";
+import { Text, View, TouchableOpacity, StyleSheet } from "react-native";
 import { DateTimePickerAndroid, DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useAlarmContext } from "../providers/AlarmProvider";
+import { useStore } from "../hooks/useAlarmStore";
+import { useShallow } from "zustand/react/shallow";
 
 export default function AndroidTimePicker() {
-    const context = useAlarmContext();
-    const now = new Date();
-    const [date, setDate] = useState(new Date(now.getFullYear(), now.getMonth(), now.getDate(), context.time.hours, context.time.minutes ));
+    const [alarmTime, setAlarmTime] = useStore(useShallow((state) => [state.alarmTime, state.setAlarmTime]));
 
     const onChange = (event: DateTimePickerEvent, selectedDate: Date | undefined) => {
         if (selectedDate) {
-            setDate(selectedDate);
-            context.timeChanged({ hours: selectedDate.getHours(), minutes: selectedDate.getMinutes() });
+            //setDate(selectedDate);
+            //setAlarmTime({ hours: selectedDate.getHours(), minutes: selectedDate.getMinutes() });
         }
     };
 
     const showTimepicker = () => {
+        const now = new Date();
+        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate(), alarmTime.hours, alarmTime.minutes )
+
         DateTimePickerAndroid.open({
             value: date,
             onChange,
@@ -32,7 +33,7 @@ export default function AndroidTimePicker() {
                     styles.item,
                     //{ position: 'absolute', left: -100, top: 50 },
                 ]}>
-                <Text>{String(date.getHours()).padStart(2, "0") + ":" + String(date.getMinutes()).padStart(2, "0")}</Text>
+                <Text>{String(alarmTime.hours).padStart(2, "0") + ":" + String(alarmTime.minutes).padStart(2, "0")}</Text>
             </TouchableOpacity>
         </View>
     );

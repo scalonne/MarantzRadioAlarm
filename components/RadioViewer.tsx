@@ -2,17 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, ScrollView, View } from 'react-native';
 import { StationType } from '../types/StationType';
 import RadioButton from './RadioButton';
-import { useAppContext } from '../App';
+import { useStore } from '../hooks/useAlarmStore';
+import { useShallow } from 'zustand/react/shallow';
 
 export function RadioViewer() {
-  const context = useAppContext();
+  const [stations, setStations] = useStore(useShallow((state) => [state.stations, state.setStations]));
+  const [station, setStation] = useStore(useShallow((state) => [state.selectedStation, state.setSelectedStation]));
 
-  const [stations, setStations] = useState(context.radio.stations.value);
-  const [station, setStation] = useState(context.radio.station.value);
-
-  useEffect(() => {
-    context.radio.station.value = station;
-  }, [station]);
+  // useEffect(() => {
+  //   context.radio.station.value = station;
+  // }, [station]);
 
   const stationOnClick = (newStation: StationType) => {
     console.log("stationOnClick: " + newStation.name);

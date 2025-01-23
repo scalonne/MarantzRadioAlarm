@@ -1,29 +1,43 @@
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Entypo } from '@expo/vector-icons'
-import { useAppContext } from '../App';
 import { useEffect, useState } from 'react';
+import { useStore } from '../hooks/useAlarmStore';
+import { MarantzController } from '../services/MarantzController';
+import { useShallow } from 'zustand/react/shallow';
 
 export function Playback() {
-  var context = useAppContext();
-  var [station, setStation] = useState(context.radio.station.value);
+  const station = useStore(useShallow((state) => state.selectedStation));
+  const marantzController = MarantzController.getInstance();
 
-  useEffect(() => {
-    context.radio.station.subscribeOnChange((newValue) => {
-      setStation(newValue);
-    });
-  }, []);
+  // useEffect(() => {
+  //   context.radio.station.subscribeOnChange((newValue) => {
+  //     setStation(newValue);
+  //   });
+  // }, []);
 
-  const handlePlay = () => {
+  const play = () => {
     if (station) {
-      context.amplifierController.play(station.url);
+      marantzController.play(station.streamUri);
     }
   };
+
+  const stop = () => {
+    marantzController.stop();
+  }
+
+  const volumeUp = () => {
+    marantzController.volumUp();
+  }
+
+  const volumDown = () => {
+    marantzController.volumDown();
+  }
 
   return (
     <View style={styles.container}>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={handlePlay}
+          onPress={play}
           style={[
             styles.button,
             //{ position: 'absolute', left: -100, top: 50 },
@@ -33,21 +47,21 @@ export function Playback() {
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => context.amplifierController.stop()}
+          onPress={stop}
           style={[styles.button]}>
           <Entypo name="controller-stop" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => context.amplifierController.volumUp()}
+          onPress={volumeUp}
           style={[styles.button]}>
           <Entypo name="arrow-up" size={24} color="black" />
         </TouchableOpacity>
       </View>
       <View style={styles.buttonContainer}>
         <TouchableOpacity
-          onPress={() => context.amplifierController.volumDown()}
+          onPress={volumDown}
           style={[styles.button]}>
           <Entypo name="arrow-down" size={24} color="black" />
         </TouchableOpacity>
