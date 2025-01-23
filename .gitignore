@@ -12,6 +12,10 @@ web-build/
 /android
 /ios
 
+# modules
+/modules/*/android/build
+/modules/*/ios/build
+
 # Native
 *.orig.*
 *.jks
